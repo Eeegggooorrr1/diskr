@@ -59,36 +59,6 @@ def encode_hamming_via_H(info_bits, r):
     code = calculate_parity_bits_via_H(code, H)
     return code, H
 
-def build_G(k, r):
-    n = k + r
-    H = build_H(r, n)
-    info_positions = [pos for pos in range(1, n+1) if not is_power_of_two(pos)]
-    if len(info_positions) != k:
-        raise ValueError("Количество информационных позиций не равно k")
-    G = []
-    for j, pos in enumerate(info_positions):
-        row = [0] * n
-        row[pos-1] = 1
-        for i in range(r):
-            parity_pos = 2 ** i
-            row[parity_pos - 1] = H[i][pos-1]
-        G.append(row)
-    return G, info_positions
-def print_G(G):
-    print("\nПорождающая матрица G:")
-    for i, row in enumerate(G):
-        print(f"{i+1:>2}: " + "".join(str(b) for b in row))
-
-def multiply_alpha_by_G(alpha, G):
-    k = len(alpha)
-    n = len(G[0])
-    beta = [0] * n
-    for j in range(k):
-        if alpha[j] == 1:
-            for col in range(n):
-                beta[col] ^= G[j][col]
-    return beta
-
 def add_global_parity(code):
     parity = sum(code) % 2
     return code + [parity]
@@ -239,13 +209,10 @@ def main():
     print_bits("Информационная α", info)
 
     beta_via_H, H = encode_hamming_via_H(info, r)
-    G, info_positions = build_G(k, r)
-    beta_via_G = multiply_alpha_by_G(info, G)
-
+    info_positions = [pos for pos in range(1, n+1) if not is_power_of_two(pos)]
 
     print()
     print_H_rows(H)
-    print_G(G)
 
     code_with_global = add_global_parity(beta_via_H)
     print_bits("\nКод β с глобальным битом четности", code_with_global)
